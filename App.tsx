@@ -222,7 +222,7 @@ const App: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300">
-            Shape Identifier
+            OpenCV Shape Identifier
           </h1>
           <p className="mt-2 text-lg text-gray-400">Upload an image to detect geometric shapes in real-time.</p>
         </header>
