@@ -133,8 +133,8 @@ const App: React.FC = () => {
   };
 
   const detectShapes = useCallback(() => {
-    if (!imageRef.current || !canvasRef.current || !isCvLoaded) {
-      setError('Required resources are not loaded.');
+    if (!imageRef.current || !canvasRef.current || !isCvLoaded || !imageSrc) {
+      setError('Required resources are not loaded or no image is selected.');
       return;
     }
 
@@ -214,7 +214,13 @@ const App: React.FC = () => {
             setIsProcessing(false);
         }
     }, 100);
-  }, [isCvLoaded]);
+  }, [isCvLoaded, imageSrc]);
+
+  useEffect(() => {
+    if (imageSrc && isCvLoaded) {
+      detectShapes();
+    }
+  }, [imageSrc, isCvLoaded, detectShapes]);
 
 
   return (
