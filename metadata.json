@@ -1,5 +1,5 @@
 {
   "name": "OpenCV Shape Identifier",
-  "description": "An interactive web application that uses OpenCV.js to detect and identify common geometric shapes (triangles, squares, rectangles, pentagons, hexagons, heptagons, octagons, and more, up to dodecagons, plus circles) from a user-uploaded image. The application highlights the detected shapes and provides a summary of the findings.",
+  "description": "An application that uses OpenCV.js to detect geometric shapes from an uploaded image.",
   "requestFramePermissions": []
 }

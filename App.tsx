@@ -81,7 +81,7 @@ const App: React.FC = () => {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const identifyShape = (approx: any, cnt: any) => {
+  const identifyShape = (approx: any, cnt: any, isConvex: boolean) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cv = (window as any).cv;
     const corners = approx.rows;
@@ -90,10 +90,14 @@ const App: React.FC = () => {
     
     let confidence = calculateRegularity(approx);
 
-    // More robust circle detection based on circularity
+    if (!isConvex && corners > 4) {
+      confidence *= 0.8; // Penalize non-convex shapes
+    }
+
+    // More robust circle detection based on circularity and vertex count
     if (perimeter > 0) {
       const circularity = (4 * Math.PI * area) / (perimeter * perimeter);
-      if (circularity > 0.85) {
+      if (corners > 8 && circularity > 0.9) {
         return { name: 'Circle', corners, confidence: circularity };
       }
     }
@@ -102,12 +106,14 @@ const App: React.FC = () => {
       case 3:
         return { name: 'Triangle', corners, confidence };
       case 4: {
-        const rect = cv.boundingRect(cnt);
-        const aspectRatio = rect.width / rect.height;
-        if (aspectRatio >= 0.95 && aspectRatio <= 1.05) {
-          // Higher confidence for squares is a blend of regularity and aspect ratio
-          const aspectRatioConfidence = 1.0 - Math.abs(1.0 - aspectRatio) * 5;
-          return { name: 'Square', corners, confidence: (confidence + Math.max(0, aspectRatioConfidence)) / 2 };
+        // Use minAreaRect for rotation-invariant aspect ratio calculation
+        const rotatedRect = cv.minAreaRect(cnt);
+        const size = rotatedRect.size;
+        const aspectRatio = Math.max(size.width, size.height) / Math.min(size.width, size.height);
+        
+        if (aspectRatio >= 0.95 && aspectRatio <= 1.1) {
+          const aspectRatioConfidence = 1.0 - (aspectRatio - 1.0) * 10;
+          return { name: 'Square', corners, confidence: (confidence + aspectRatioConfidence) / 2 };
         }
         return { name: 'Rectangle', corners, confidence };
       }
@@ -128,6 +134,9 @@ const App: React.FC = () => {
       case 12:
           return { name: 'Dodecagon', corners, confidence };
       default:
+        if (isConvex && corners > 8) {
+            return { name: 'Ellipse', corners, confidence };
+        }
         return { name: 'Unknown', corners, confidence: 0.1 };
     }
   };
@@ -145,7 +154,7 @@ const App: React.FC = () => {
     setTimeout(() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cv = (window as any).cv;
-        let src: any, gray: any, edges: any, contours: any, hierarchy: any, dst: any;
+        let src: any, gray: any, blurred: any, edges: any, contours: any, hierarchy: any, dst: any;
 
         try {
             const imgElement = imageRef.current!;
@@ -159,8 +168,11 @@ const App: React.FC = () => {
             gray = new cv.Mat();
             cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
             
+            blurred = new cv.Mat();
+            cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+
             edges = new cv.Mat();
-            cv.Canny(gray, edges, 50, 150, 3);
+            cv.Canny(blurred, edges, 75, 175, 3);
             
             contours = new cv.MatVector();
             hierarchy = new cv.Mat();
@@ -179,9 +191,10 @@ const App: React.FC = () => {
 
                 const peri = cv.arcLength(cnt, true);
                 const approx = new cv.Mat();
-                cv.approxPolyDP(cnt, approx, 0.03 * peri, true);
+                cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
                 
-                const { name, corners, confidence } = identifyShape(approx, cnt);
+                const isConvex = cv.isContourConvex(approx);
+                const { name, corners, confidence } = identifyShape(approx, cnt, isConvex);
                 
                 const moments = cv.moments(cnt, false);
                 const cX = Math.round(moments.m10 / moments.m00);
@@ -207,6 +220,7 @@ const App: React.FC = () => {
         } finally {
             if (src) src.delete();
             if (gray) gray.delete();
+            if (blurred) blurred.delete();
             if (edges) edges.delete();
             if (contours) contours.delete();
             if (hierarchy) hierarchy.delete();
@@ -306,6 +320,10 @@ const App: React.FC = () => {
               </div>
           </div>
         </main>
+        <footer className="text-center text-gray-500 text-sm mt-12">
+          &copy; {new Date().getFullYear()}  Shape Identifier. All rights reserved.
+          <p>Developed by <a href="https://nihan-vp.me" className="text-gray-400 font-normal transition-all duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-teal-300">Nihan</a></p>
+        </footer>
       </div>
     </div>
   );
