@@ -1,13 +1,14 @@
 {
+  "homepage": "https://nihan-ali-vp.github.io/identify.nihan-vp.me/",
   "name": "opencv-shape-identifier",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://nihan-ali-vp.github.io/identify.nihan-vp.me/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "react": "^19.2.0",
