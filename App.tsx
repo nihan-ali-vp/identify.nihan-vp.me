@@ -322,7 +322,7 @@ const App: React.FC = () => {
         </main>
         <footer className="text-center text-gray-500 text-sm mt-12">
           &copy; {new Date().getFullYear()}  Shape Identifier. All rights reserved.
-          <p>Developed by <a href="https://nihan-vp.me" className="text-gray-400 font-normal transition-all duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-teal-300">Nihan</a></p>
+          <p>Developed by <a href="https://www.nihan-vp.me" className="text-gray-400 font-normal transition-all duration-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-teal-300">Nihan</a></p>
         </footer>
       </div>
     </div>
